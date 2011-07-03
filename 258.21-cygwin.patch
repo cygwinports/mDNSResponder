@@ -1,0 +1,80 @@
+--- origsrc/mDNSResponder-258.21/Clients/dns-sd.c	2011-04-17 19:35:21.000000000 -0500
++++ src/mDNSResponder-258.21/Clients/dns-sd.c	2011-07-01 03:42:17.827059500 -0500
+@@ -943,7 +943,7 @@ static void getip(const char *const name
+ 	struct addrinfo *addrs = NULL;
+ 	int err = getaddrinfo(name, NULL, NULL, &addrs);
+ 	if (err) fprintf(stderr, "getaddrinfo error %d for %s", err, name);
+-	else memcpy(result, addrs->ai_addr, SA_LEN(addrs->ai_addr));
++	else memcpy(result, addrs->ai_addr, sizeof(struct sockaddr));
+ 	if (addrs) freeaddrinfo(addrs);
+ 	}
+ 
+--- origsrc/mDNSResponder-258.21/mDNSPosix/Makefile	2009-08-10 20:13:47.000000000 -0500
++++ src/mDNSResponder-258.21/mDNSPosix/Makefile	2011-07-01 03:18:54.931616400 -0500
+@@ -149,6 +149,13 @@ JDK = /System/Library/Frameworks/JavaVM.
+ JAVACFLAGS_OS = -dynamiclib -I/System/Library/Frameworks/JavaVM.framework/Headers -framework JavaVM 
+ else
+ 
++ifeq ($(os),cygwin)
++CC = gcc
++LD = $(CC) -shared
++CFLAGS_OS = -DNOT_HAVE_SA_LEN -DUSE_TCP_LOOPBACK
++JDK = /usr
++else
++
+ $(error ERROR: Must specify target OS on command-line, e.g. "make os=x [target]".\
+ Supported operating systems include: x, linux, netbsd, freebsd, openbsd, solaris) 
+ endif
+@@ -157,6 +163,7 @@ endif
+ endif
+ endif
+ endif
++endif
+ 
+ NSSLIBNAME  := libnss_mdns
+ NSSVERSION  := 0.2
+@@ -243,7 +250,11 @@ $(BUILDDIR)/mdnsd: $(DAEMONOBJS)
+ 	@$(STRIP) $@
+ 
+ # libdns_sd target builds the client library
++ifeq ($(os),cygwin)
++libdns_sd: setup $(BUILDDIR)/cygdns_sd-$(LIBVERS).dll
++else
+ libdns_sd: setup $(BUILDDIR)/libdns_sd.$(LDSUFFIX)
++endif
+ 	@echo "Client library done"
+ 
+ CLIENTLIBOBJS = $(OBJDIR)/dnssd_clientlib.c.so.o $(OBJDIR)/dnssd_clientstub.c.so.o $(OBJDIR)/dnssd_ipc.c.so.o
+@@ -252,6 +263,10 @@ $(BUILDDIR)/libdns_sd.$(LDSUFFIX): $(CLI
+ 	@$(LD) $(LINKOPTS) -o $@ $+
+ 	@$(STRIP) $@
+ 
++$(BUILDDIR)/cygdns_sd-$(LIBVERS).dll: $(CLIENTLIBOBJS)
++	@$(LD) $(LINKOPTS) -Wl,--out-implib,$(BUILDDIR)/libdns_sd.dll.a -o $@ $+
++	@$(STRIP) $@
++
+ Clients: setup libdns_sd ../Clients/build/dns-sd
+ 	@echo "Clients done"
+ 
+@@ -387,7 +402,11 @@ $(DSTROOT)/$(SYSTEM_LIBRARY_DIR)/Java/Ex
+ 	@if test ! -d $(DSTROOT)/$(SYSTEM_LIBRARY_DIR)/Java/Extensions ; then mkdir -p $(DSTROOT)/$(SYSTEM_LIBRARY_DIR)/Java/Extensions ; fi
+ 	$(CP) $< $@
+ 
++ifeq ($(os),cygwin)
++Java: setup $(BUILDDIR)/dns_sd.jar $(BUILDDIR)/cygjdns_sd.dll
++else
+ Java: setup $(BUILDDIR)/dns_sd.jar $(BUILDDIR)/libjdns_sd.$(LDSUFFIX)
++endif
+ 	@echo "Java wrappers done"
+ 
+ JAVASRC	= $(SHAREDDIR)/Java
+@@ -412,6 +431,9 @@ $(BUILDDIR)/dns_sd.jar: $(JARCONTENTS) s
+ $(BUILDDIR)/libjdns_sd.$(LDSUFFIX): $(JAVASRC)/JNISupport.c $(OBJDIR)/DNSSD.java.h setup libdns_sd
+ 	$(CC) -o $@ $< $(JAVACFLAGS) -I$(OBJDIR) -L$(BUILDDIR)
+ 
++$(BUILDDIR)/cygjdns_sd.dll: $(JAVASRC)/JNISupport.c $(OBJDIR)/DNSSD.java.h setup libdns_sd
++	$(LD) -o $@ $< $(JAVACFLAGS) -I$(OBJDIR) -L$(BUILDDIR)
++
+ $(OBJDIR)/com/apple/dnssd/%.class:	$(JAVASRC)/%.java
+ 	$(JAVAC) -d $(OBJDIR) -classpath $(OBJDIR) $<
+ 

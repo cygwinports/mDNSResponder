@@ -1,0 +1,28 @@
+inherit java
+
+HOMEPAGE="http://developer.apple.com/opensource/"
+SRC_URI="http://opensource.apple.com/tarballs/mDNSResponder/${P}.tar.gz"
+PATCH_URI="258.21-cygwin.patch"
+
+PKG_NAMES="${PN} libdns_sd1 libdns_sd-devel java-dns_sd"
+mDNSResponder_CONTENTS="usr/bin/dns-sd.exe usr/share/doc/"
+libdns_sd1_CONTENTS="usr/bin/cygdns_sd-1.dll"
+libdns_sd_devel_CONTENTS="usr/include/dns_sd.h usr/lib/libdns_sd.dll.a"
+java_dns_sd_CONTENTS="usr/bin/cygjdns_sd.dll ${JAVA_DIR#/} ${JAVADOC_DIR#/}"
+
+src_compile() {
+	lndirs
+	cd ${B}/mDNSPosix
+	cygmake os=cygwin Clients Java JavaDoc
+}
+
+src_install() {
+	cd ${B}
+	dobin Clients/build/dns-sd.exe mDNSPosix/build/prod/*.dll
+	dolib mDNSPosix/build/prod/*.a
+	dojar mDNSPosix/build/prod/*.jar
+	newjavadoc mDNSPosix/build/prod/ dns_sd
+	doinclude mDNSShared/dns_sd.h
+
+	rm -f ${D}${JAVADOC_DIR}/dns_sd/*.{a,dll,exe,jar}
+}
