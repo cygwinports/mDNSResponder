@@ -1,13 +1,13 @@
---- origsrc/mDNSResponder-258.21/Clients/dns-sd.c	2011-04-17 19:35:21.000000000 -0500
-+++ src/mDNSResponder-258.21/Clients/dns-sd.c	2011-07-01 03:42:17.827059500 -0500
-@@ -943,7 +943,7 @@ static void getip(const char *const name
- 	struct addrinfo *addrs = NULL;
- 	int err = getaddrinfo(name, NULL, NULL, &addrs);
- 	if (err) fprintf(stderr, "getaddrinfo error %d for %s", err, name);
--	else memcpy(result, addrs->ai_addr, SA_LEN(addrs->ai_addr));
-+	else memcpy(result, addrs->ai_addr, sizeof(struct sockaddr));
- 	if (addrs) freeaddrinfo(addrs);
- 	}
+--- origsrc/mDNSResponder-379.32.1/Clients/dns-sd.c
++++ src/mDNSResponder-379.32.1/Clients/dns-sd.c
+@@ -988,7 +988,7 @@ static void getip(const char *const name
+     struct addrinfo *addrs = NULL;
+     int err = getaddrinfo(name, NULL, NULL, &addrs);
+     if (err) fprintf(stderr, "getaddrinfo error %d for %s", err, name);
+-    else memcpy(result, addrs->ai_addr, SA_LEN(addrs->ai_addr));
++    else memcpy(result, addrs->ai_addr, sizeof(struct sockaddr));
+     if (addrs) freeaddrinfo(addrs);
+ }
  
 --- origsrc/mDNSResponder-258.21/mDNSPosix/Makefile	2009-08-10 20:13:47.000000000 -0500
 +++ src/mDNSResponder-258.21/mDNSPosix/Makefile	2011-07-01 03:18:54.931616400 -0500

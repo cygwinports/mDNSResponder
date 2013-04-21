@@ -1,7 +1,0 @@
-category: Java
-requires: libdns_sd1
-external-source: mDNSResponder
-sdesc: "Bonjour Zeroconf client Java library"
-ldesc: "Bonjour, also known as zero-configuration networking, enables 
-automatic discovery of computers, devices, and services on IP networks 
-using industry standard IP protocols."
