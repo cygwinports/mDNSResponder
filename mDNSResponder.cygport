@@ -22,7 +22,9 @@ mDNSResponder_CONTENTS="
 	usr/share/doc/
 	usr/share/man/
 "
+libdns_sd1_CATEGORY="Libs"
 libdns_sd1_CONTENTS="usr/bin/cygdns_sd-1.dll"
+libdns_sd_devel_CATEGORY="Libs"
 libdns_sd_devel_CONTENTS="usr/include/dns_sd.h usr/lib/libdns_sd.dll.a"
 java_dns_sd_CONTENTS="usr/bin/cygjdns_sd.dll ${JAVA_DIR#/}"
 javadoc_dns_sd_CONTENTS=${JAVADOC_DIR#/}
