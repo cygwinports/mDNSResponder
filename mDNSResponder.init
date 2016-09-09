@@ -1,0 +1,104 @@
+#! /bin/bash
+#
+# mDNSResponder   Start/Stop the Bonjour Service
+# v1.0 2004-10-18 Reini Urban rurban@x-ray.at
+#
+# chkconfig: 2345 90 60
+# description: Bonjour zero-configuration network responder service
+# processname: mDNSResponder
+
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin:`cygpath -S`
+
+# Source function library.
+if [ -f /etc/init.d/functions ] ; then
+  . /etc/init.d/functions
+fi
+
+RETVAL=0
+
+# See how we were called.
+
+prog="mDNSResponder"
+progdir="/usr/sbin"
+DAEMON="$progdir/$prog.exe"
+svc="Bonjour Service"
+
+test -f $DAEMON || exit 1
+
+# Source configuration
+if [ -f /etc/sysconfig/$prog ] ; then
+    . /etc/sysconfig/$prog
+fi
+
+start() {
+        echo -n $"Starting $svc: "
+	# check if cygrunsrv process
+	net start "$svc"
+        RETVAL=$?
+        echo
+        [ $RETVAL -eq 0 ] && echo "done."
+        return $RETVAL
+}
+
+stop() {
+        echo -n $"Stopping $svc: "
+	net stop "$svc"
+	# this really needs a long time to stop.
+        RETVAL=$?
+        echo "."
+        [ $RETVAL -eq 0 ] && echo "done."
+        return $RETVAL
+}
+
+rhstatus() {
+        # service status
+        cygrunsrv -Q "$svc"
+}
+
+restart() {
+        echo -n $"Restarting $svc: "
+        stop && sleep 1 && start
+        [ $RETVAL -eq 0 ] && echo "done."
+        return $RETVAL
+}
+
+install() {
+        echo -n $"Installing $svc: "
+	$prog -install
+        [ $RETVAL -eq 0 ] && echo "done."
+        return $RETVAL
+}
+
+uninstall() {
+        echo -n $"Uninstalling $svc: "
+	stop
+	$prog -remove
+        [ $RETVAL -eq 0 ] && echo "done."
+        return $RETVAL
+}
+
+case "$1" in
+  start)
+        start
+        ;;
+  stop)
+        stop
+        ;;
+  restart)
+        restart
+        ;;
+  install)
+        install
+        ;;
+  uninstall)
+        uninstall
+        ;;
+  status)
+        rhstatus
+        ;;
+  *)
+        echo $"Usage: $0 {start|stop|status|install|uninstall|restart}"
+        exit 1
+esac
+
+exit $?

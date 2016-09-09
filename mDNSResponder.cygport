@@ -1,5 +1,5 @@
 NAME="mDNSResponder"
-VERSION=379.32.1
+VERSION=625.41.2
 RELEASE=1
 CATEGORY="Net"
 SUMMARY="Bonjour Zeroconf implementation"
@@ -8,14 +8,20 @@ automatic discovery of computers, devices, and services on IP networks using
 industry standard IP protocols."
 HOMEPAGE="http://developer.apple.com/opensource/"
 SRC_URI="http://opensource.apple.com/tarballs/mDNSResponder/${NAME}-${VERSION}.tar.gz"
-PATCH_URI="258.21-cygwin.patch"
+SRC_URI+=" ${NAME}.init"
+PATCH_URI="
+	258.21-cygwin.patch
+	625.41.2-mingw.patch
+"
 
 PKG_NAMES="${NAME} libdns_sd1 libdns_sd-devel"
-mDNSResponder_MESSAGE="The Cygwin mDNSResponder package contains only clients.
-If you do not already have the 'Bonjour Service' installed (it comes with
-a number of popular Windows programs), then you can download it at
-http://support.apple.com/kb/DL999"
-mDNSResponder_CONTENTS="usr/bin/dns-sd.exe usr/share/doc/"
+mDNSResponder_CONTENTS="
+	etc/rc.d/init.d/${NAME}
+	usr/bin/dns-sd.exe
+	usr/sbin/${NAME}.exe
+	usr/share/doc/
+	usr/share/man/
+"
 libdns_sd1_CONTENTS="usr/bin/cygdns_sd-1.dll"
 libdns_sd_devel_CONTENTS="usr/include/dns_sd.h usr/lib/libdns_sd.dll.a"
 java_dns_sd_CONTENTS="usr/bin/cygjdns_sd.dll ${JAVA_DIR#/}"
@@ -24,14 +30,24 @@ javadoc_dns_sd_CONTENTS=${JAVADOC_DIR#/}
 src_compile() {
 	lndirs
 	cd ${B}/mDNSPosix
-	cygmake -j1 os=cygwin Clients
+	cygmake -j1 os=cygwin Clients \
+		CFLAGS_DEBUG="${CFLAGS} -DMDNS_DEBUGMSGS=0" \
+		STRIP=:
+
+	cd ${B}/mDNSWindows/SystemService
+	cygmake -j1 CFLAGS_DEBUG="${CFLAGS}"
 }
 
 src_install() {
 	cd ${B}
 	dobin Clients/build/dns-sd.exe mDNSPosix/build/prod/*.dll
+	dosbin mDNSWindows/SystemService/build/prod/mDNSResponder.exe
 	dolib mDNSPosix/build/prod/*.a
 	doinclude mDNSShared/dns_sd.h
+	doman ${S}/mDNSShared/{dns-sd.1,mDNSResponder.8}
+
+	exeinto /etc/rc.d/init.d
+	newexe ${S}/${NAME}.init ${NAME}
 
 	rm -f ${D}${JAVADOC_DIR}/dns_sd/*.{a,dll,exe,jar}
 }

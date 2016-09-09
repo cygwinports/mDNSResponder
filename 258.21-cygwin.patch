@@ -18,7 +18,7 @@
 +ifeq ($(os),cygwin)
 +CC = gcc
 +LD = $(CC) -shared
-+CFLAGS_OS = -DNOT_HAVE_SA_LEN -DUSE_TCP_LOOPBACK
++CFLAGS_OS = -DNOT_HAVE_SA_LEN -DUSE_TCP_LOOPBACK -DFD_SETSIZE=1024
 +JDK = /usr
 +else
 +
