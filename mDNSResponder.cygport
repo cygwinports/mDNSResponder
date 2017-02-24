@@ -1,5 +1,5 @@
 NAME="mDNSResponder"
-VERSION=625.41.2
+VERSION=765.30.11
 RELEASE=1
 CATEGORY="Net"
 SUMMARY="Bonjour Zeroconf implementation"
@@ -9,9 +9,10 @@ industry standard IP protocols."
 HOMEPAGE="http://developer.apple.com/opensource/"
 SRC_URI="http://opensource.apple.com/tarballs/mDNSResponder/${NAME}-${VERSION}.tar.gz"
 SRC_URI+=" ${NAME}.init"
+SRC_URI+=" netfw.h" # from wine
 PATCH_URI="
 	258.21-cygwin.patch
-	625.41.2-mingw.patch
+	765.30.11-mingw.patch
 "
 
 PKG_NAMES="${NAME} libdns_sd1 libdns_sd-devel"
