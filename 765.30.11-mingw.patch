@@ -3,7 +3,7 @@ https://github.com/swarminglogic/sdl2-cross/blob/master/utils/patches/mDNSRespon
 
 --- origsrc/mDNSResponder-765.30.11/mDNSShared/CommonServices.h	2015-07-15 14:50:30.000000000 -0500
 +++ src/mDNSResponder-765.30.11/mDNSShared/CommonServices.h	2017-02-23 16:51:14.315100200 -0600
-@@ -260,6 +260,10 @@ extern "C" {
+@@ -260,11 +260,15 @@ extern "C" {
          #pragma warning( disable:4127 ) // Disable "conditional expression is constant" warning for debug macros.
          #pragma warning( disable:4706 ) // Disable "assignment within conditional expression" for Microsoft headers.
  
@@ -14,6 +14,12 @@ https://github.com/swarminglogic/sdl2-cross/blob/master/utils/patches/mDNSRespon
      #endif
  
      #include    <windows.h>
+     #include    <winsock2.h>
+-    #include    <Ws2tcpip.h>
++    #include    <ws2tcpip.h>
+ 
+     #if ( defined( _MSC_VER ) )
+         #pragma warning( default:4706 )
 @@ -474,7 +478,7 @@ typedef int socklen_t;
  // - Windows
  
@@ -51,6 +57,17 @@ https://github.com/swarminglogic/sdl2-cross/blob/master/utils/patches/mDNSRespon
      typedef unsigned int pid_t;
      typedef unsigned int socklen_t;
  #endif
+--- origsrc/mDNSResponder-765.50.9/mDNSWindows/mDNSWin32.c	2016-09-13 17:37:18.000000000 -0500
++++ src/mDNSResponder-765.50.9/mDNSWindows/mDNSWin32.c	2017-09-13 11:53:30.246082900 -0500
+@@ -40,7 +40,7 @@
+ #include	"Secret.h"
+ #include	<dns_sd.h>
+ 
+-#include	<Iphlpapi.h>
++#include	<iphlpapi.h>
+ #include	<mswsock.h>
+ #include	<process.h>
+ #include	<ntsecapi.h>
 --- origsrc/mDNSResponder-765.30.11/mDNSWindows/DLL/Makefile	1969-12-31 18:00:00.000000000 -0600
 +++ src/mDNSResponder-765.30.11/mDNSWindows/DLL/Makefile	2017-02-23 16:51:14.329101800 -0600
 @@ -0,0 +1,59 @@
@@ -200,6 +217,26 @@ https://github.com/swarminglogic/sdl2-cross/blob/master/utils/patches/mDNSRespon
 +
 +$(OBJDIR)/%.rc.o:	%.rc
 +	$(RC) -I$(WINDOWSDIR) -o $@ $<
+--- origsrc/mDNSResponder-765.50.9/mDNSWindows/SystemService/Service.c	2015-08-13 17:12:40.000000000 -0500
++++ src/mDNSResponder-765.50.9/mDNSWindows/SystemService/Service.c	2017-09-13 11:54:46.498350800 -0500
+@@ -31,7 +31,7 @@
+ #include	"Service.h"
+ #include	"EventLog.h"
+ 
+-#include	"Resource.h"
++#include	"resource.h"
+ 
+ #include	"mDNSEmbeddedAPI.h"
+ #include	"uDNS.h"
+@@ -43,7 +43,7 @@
+ #if( !TARGET_OS_WINDOWS_CE )
+ 	#include	<mswsock.h>
+ 	#include	<process.h>
+-	#include	<ipExport.h>
++	#include	<ipexport.h>
+ 	#include	<ws2def.h>
+ 	#include	<ws2ipdef.h>
+ 	#include	<iphlpapi.h>
 --- origsrc/mDNSResponder-765.30.11/mDNSWindows/SystemService/Service.rc	2009-09-17 17:07:45.000000000 -0500
 +++ src/mDNSResponder-765.30.11/mDNSWindows/SystemService/Service.rc	2017-02-23 16:51:14.340615100 -0600
 @@ -7,7 +7,7 @@

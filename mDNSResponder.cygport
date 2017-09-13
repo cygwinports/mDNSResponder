@@ -1,5 +1,5 @@
 NAME="mDNSResponder"
-VERSION=765.30.11
+VERSION=765.50.9
 RELEASE=1
 CATEGORY="Net"
 SUMMARY="Bonjour Zeroconf implementation"
